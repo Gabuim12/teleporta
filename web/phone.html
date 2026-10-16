@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0B1F3F">
+<title>Teleporta</title>
+<link rel="icon" href="/static/logo.svg">
+<link rel="apple-touch-icon" href="/static/logo.svg">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js"></script>
+<style>
+  main { max-width: 560px; margin: 0 auto; display: grid; gap: 14px; }
+  .bar { margin: 0; max-width: none; }
+  .hostline { display: flex; align-items: center; gap: 8px; }
+  input[type=file] { display: none; }
+  .pick { display: grid; justify-items: center; gap: 14px; text-align: center; cursor: pointer; padding: 26px 18px 22px; }
+  .pick .portal { width: 150px; }
+  .pick .core { color: var(--acc-text); }
+  .pick .core .i { width: 44px; height: 44px; stroke-width: 1.6; }
+  .pick b { font-size: 1.15rem; letter-spacing: -.01em; }
+  .pick:active .portal { transform: scale(.97); }
+  .portal { transition: transform .12s; }
+  .banner { padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--acc) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--acc) 45%, var(--line)); font-size: .93rem; }
+  .tip summary { cursor: pointer; font-weight: 650; }
+  .tip p { margin-top: 8px; }
+  .acts { display: flex; gap: 6px; }
+  .note .txt { white-space: pre-wrap; word-break: break-word; }
+  .note .sub { margin-bottom: 2px; }
+  .left { text-align: center; }
+  .tabs { position: sticky; top: 8px; z-index: 5; }
+</style>
+</head>
+<body>
+<main>
+  <header class="bar">
+    <div>
+      <div class="brand"><img src="/static/logo.svg" alt="">Teleporta</div>
+      <div class="hostline mut" style="margin-top:6px"><span id="dot" class="dot on"></span><span id="host"></span></div>
+    </div>
+    <div class="bar-r"><span class="chip" id="planchip"></span><button class="icon-btn" id="lang" type="button"></button></div>
+  </header>
+
+  <nav class="seg tabs" role="tablist">
+    <button role="tab" id="t-send" aria-selected="true" data-i18n="p.tab.send"></button>
+    <button role="tab" id="t-recv" aria-selected="false" data-i18n="p.tab.recv"></button>
+    <button role="tab" id="t-text" aria-selected="false" data-i18n="p.tab.text"></button>
+  </nav>
+
+  <div class="banner" id="limit" hidden></div>
+
+  <section id="p-send" style="display:grid;gap:14px">
+    <label class="card pick" for="file">
+      <div class="portal" aria-hidden="true">
+        <svg class="ring" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="48.5" fill="none" stroke="var(--line)" stroke-width=".8"/>
+          <circle class="spin" cx="50" cy="50" r="48.5" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-dasharray="230 75"/>
+        </svg>
+        <div class="core"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+      </div>
+      <div><b data-i18n="p.pick"></b><div class="mut" data-i18n="p.pick.sub"></div></div>
+    </label>
+    <input id="file" type="file" multiple>
+    <div class="card" id="summary" hidden>
+      <div id="sumtxt"></div>
+      <div class="bar-p"><i id="sumbar"></i></div>
+      <p class="mut" style="margin:8px 0 0" data-i18n="p.keep"></p>
+    </div>
+    <ul class="list" id="queue"></ul>
+    <details class="card tip" id="ios-tip" hidden>
+      <summary data-i18n="p.ios.title"></summary>
+      <p class="mut" data-i18n-html="p.ios.body"></p>
+    </details>
+  </section>
+
+  <section id="p-recv" hidden style="gap:12px">
+    <p class="mut" id="recv-help" style="margin:0"></p>
+    <button class="btn ghost" id="zip" type="button"></button>
+    <ul class="list" id="outbox"></ul>
+  </section>
+
+  <section id="p-text" hidden>
+    <div class="card" style="display:grid;gap:10px">
+      <textarea id="note-in" data-i18n-ph="p.text.ph" rows="3"></textarea>
+      <button class="btn" id="note-send" type="button" data-i18n="text.send"></button>
+    </div>
+    <ul class="list" id="notes" style="margin-top:14px"></ul>
+  </section>
+</main>
+
+<script>
+const { t, $, esc, fmt, ago, ico, kindIcon, toast, linkify, copyText, applyI18n, langButton } = TP;
+const IMG = /\.(jpe?g|png|gif|webp|bmp)$/i, VID = /\.(mp4|mov|m4v|avi|mkv|webm)$/i;
+const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let PLAN = { pro: false, remaining: null, limit: null, used: 0 };
+let NOTES = {};
+const last = {};
+const paint = (el, key, html) => { if (last[key] !== html) { last[key] = html; el.innerHTML = html; } };
+
+applyI18n(); langButton($('#lang'));
+$('#recv-help').innerHTML = t(IOS ? 'p.recv.help.ios' : 'p.recv.help');
+if (IOS) $('#ios-tip').hidden = false;
+
+// ---------- abas ----------
+function tab(which) {
+  for (const n of ['send', 'recv', 'text']) {
+    $('#p-' + n).hidden = n !== which;
+    if (n !== which) $('#p-' + n).style.display = ''; else $('#p-' + n).style.display = 'grid';
+    $('#t-' + n).setAttribute('aria-selected', n === which);
+  }
+  if (which === 'recv') loadOutbox();
+  if (which === 'text') loadNotes();
+}
+for (const n of ['send', 'recv', 'text']) $('#t-' + n).onclick = () => tab(n);
+tab('send');
+
+// ---------- plano ----------
+function showPlan() {
+  const chip = $('#planchip');
+  chip.className = 'chip' + (PLAN.pro ? ' pro' : '');
+  chip.innerHTML = PLAN.pro ? ico('bolt') + ' Pro' : esc(t('p.free.left', { n: PLAN.remaining }));
+  const hit = !PLAN.pro && PLAN.remaining === 0;
+  $('#limit').hidden = !hit;
+  $('#limit').textContent = t('p.limit.hit', { limit: PLAN.limit });
+  $('#zip').innerHTML = (PLAN.pro ? '' : ico('lock') + ' ') + esc(t('zip.outbox'));
+}
+
+async function ping() {
+  try {
+    const r = await fetch('/api/ping');
+    if (r.status === 401) return location.reload();
+    const j = await r.json();
+    PLAN = j.plan;
+    $('#host').textContent = t('p.connected', { host: j.host });
+    $('#dot').className = 'dot on';
+    showPlan();
+  } catch { $('#dot').className = 'dot'; $('#host').textContent = t('p.offline'); }
+}
+
+// ---------- envio ----------
+const queue = [];
+let running = false, wake = null;
+
+$('#file').addEventListener('change', e => {
+  let room = PLAN.pro ? Infinity : (PLAN.remaining ?? Infinity);
+  for (const file of e.target.files) {
+    const li = document.createElement('li');
+    li.className = 'row';
+    li.innerHTML = `<div class="thumb">${ico(VID.test(file.name) ? 'video' : kindIcon(file.name))}</div><div class="grow"><div class="nm"></div><div class="sub st">${esc(t('p.queued'))}</div><div class="bar-p"><i></i></div></div>`;
+    li.querySelector('.nm').textContent = file.name;
+    $('#queue').prepend(li);
+    const q = { file, li, sent: 0, state: 'wait' };
+    if (room <= 0) { q.state = 'err'; const st = li.querySelector('.st'); st.className = 'sub err st'; st.textContent = t('p.err.limit'); }
+    else room--;
+    queue.push(q);
+  }
+  e.target.value = '';
+  pump();
+});
+
+function totals() {
+  const total = queue.reduce((a, q) => a + q.file.size, 0);
+  const sent = queue.reduce((a, q) => a + (q.state === 'done' ? q.file.size : q.sent), 0);
+  return { total, sent, done: queue.filter(q => q.state === 'done').length, failed: queue.filter(q => q.state === 'err').length };
+}
+let speed = 0;
+function render() {
+  const s = totals();
+  $('#summary').hidden = !queue.length;
+  const all = s.done + s.failed === queue.length;
+  $('#sumtxt').innerHTML = all
+    ? (s.failed ? `<span class="err">${esc(t('p.sum.partial', { ok: s.done, bad: s.failed }))}</span>`
+      : `<span class="ok">${ico('check')} ${esc(t('p.sum.done', { n: s.done, size: fmt(s.total) }))}</span>`)
+    : esc(t('p.sum.sending', { n: s.done + 1, total: queue.length, sent: fmt(s.sent), all: fmt(s.total) })) + (speed ? ` · ${fmt(speed)}/s` : '');
+  $('#sumbar').style.width = (s.total ? s.sent / s.total * 100 : 0) + '%';
+}
+
+async function pump() {
+  if (running) return;
+  running = true;
+  try { wake = await navigator.wakeLock?.request('screen'); } catch {}
+  let next;
+  while ((next = queue.find(q => q.state === 'wait'))) {
+    await upload(next);
+    render();
+  }
+  try { await wake?.release(); } catch {}
+  running = false; speed = 0;
+  render(); ping();
+}
+
+function upload(q) {
+  return new Promise(resolve => {
+    const st = q.li.querySelector('.st'), bar = q.li.querySelector('.bar-p > i');
+    q.state = 'up';
+    st.textContent = t('p.sending');
+    let t0 = performance.now(), b0 = 0;
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', '/api/upload?name=' + encodeURIComponent(q.file.name));
+    xhr.setRequestHeader('X-Last-Modified', q.file.lastModified);
+    xhr.upload.onprogress = e => {
+      q.sent = e.loaded;
+      bar.style.width = (e.loaded / q.file.size * 100) + '%';
+      st.textContent = `${fmt(e.loaded)} / ${fmt(q.file.size)}`;
+      const dt = (performance.now() - t0) / 1000;
+      if (dt > 0.8) { speed = (e.loaded - b0) / dt; t0 = performance.now(); b0 = e.loaded; }
+      render();
+    };
+    const fail = msg => { q.state = 'err'; q.sent = 0; st.className = 'sub err st'; st.textContent = msg; resolve(); };
+    xhr.onload = () => {
+      if (xhr.status === 401) return location.reload();
+      if (xhr.status === 402) { ping(); return fail(t('p.err.limit')); }
+      if (xhr.status !== 200) return fail(t('p.err.send'));
+      q.state = 'done';
+      bar.style.width = '100%';
+      st.className = 'sub ok st'; st.textContent = '✓ ' + fmt(q.file.size);
+      resolve();
+    };
+    xhr.onerror = xhr.ontimeout = () => fail(t('p.err.lost'));
+    xhr.send(q.file);
+  });
+}
+
+// ---------- receber ----------
+async function loadOutbox() {
+  try {
+    const r = await fetch('/api/outbox');
+    if (r.status === 401) return location.reload();
+    const j = await r.json();
+    const files = j.files.filter(f => !f.partial);
+    paint($('#outbox'), 'outbox', files.length ? files.map(f => {
+      const u = '/download/' + encodeURIComponent(f.name);
+      const thumb = IMG.test(f.title) ? `<img loading="lazy" src="${u}?inline=1" alt="">` : ico(VID.test(f.title) ? 'video' : kindIcon(f.title));
+      return `<li class="row"><div class="thumb">${thumb}</div>
+        <div class="grow"><div class="nm">${esc(f.title)}</div><div class="sub">${fmt(f.size)}</div></div>
+        <div class="acts"><a class="btn ghost small" href="${u}?inline=1" target="_blank" rel="noopener">${esc(t('p.open'))}</a>
+        <a class="btn small" data-dl href="${u}" download>${ico('down')}<span>${esc(t('p.download'))}</span></a></div></li>`;
+    }).join('') : `<li class="empty">${esc(t('p.recv.empty'))}</li>`);
+  } catch {}
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-dl]') && !PLAN.pro && PLAN.remaining === 0) { e.preventDefault(); toast(t('p.limit.hit', { limit: PLAN.limit }), 'err'); }
+});
+$('#zip').onclick = () => {
+  if (PLAN.pro) location.href = '/api/zip?which=outbox';
+  else toast(t('p.pro.only'));
+};
+
+// ---------- texto e links ----------
+async function loadNotes() {
+  try {
+    const r = await fetch('/api/notes');
+    if (r.status === 401) return location.reload();
+    const list = await r.json();
+    NOTES = Object.fromEntries(list.map(n => [n.id, n.text]));
+    paint($('#notes'), 'notes', list.length ? list.map(n => `<li class="row note">
+      <div class="grow"><div class="sub">${esc(n.from)} · ${ago(n.t)}</div><div class="txt">${linkify(n.text)}</div></div>
+      <button class="x" title="${esc(t('text.copy'))}" data-copy="${n.id}">${ico('copy')}</button>
+      <button class="x" title="${esc(t('delete'))}" data-delnote="${n.id}">${ico('x')}</button></li>`).join('')
+      : `<li class="empty">${esc(t('text.empty'))}</li>`);
+  } catch {}
+}
+$('#note-send').onclick = async () => {
+  const text = $('#note-in').value.trim();
+  if (!text) return;
+  await fetch('/api/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+  $('#note-in').value = ''; loadNotes();
+};
+document.addEventListener('click', async e => {
+  const c = e.target.closest('[data-copy]');
+  if (c) { await copyText(NOTES[c.dataset.copy] || ''); toast(t('text.copied')); }
+  const d = e.target.closest('[data-delnote]');
+  if (d) { await fetch('/api/notes/' + d.dataset.delnote, { method: 'DELETE' }); loadNotes(); }
+});
+
+ping();
+setInterval(ping, 4000); // também serve de "estou aqui" para o painel do PC
+setInterval(() => { if (!$('#p-recv').hidden) loadOutbox(); if (!$('#p-text').hidden) loadNotes(); }, 4000);
+</script>
+</body>
+</html>

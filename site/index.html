@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teleporta — fotos e arquivos do celular pro PC, sem cabo e sem nuvem</title>
+<meta name="description" content="Envie fotos, vídeos e arquivos do celular para o PC pelo Wi-Fi, na qualidade original. Escaneie um QR code e pronto. Grátis para começar.">
+<meta property="og:title" content="Teleporta — do celular pro PC, sem cabo e sem nuvem">
+<meta property="og:description" content="Fotos, vídeos e arquivos pelo seu Wi-Fi, na qualidade original. Sem cadastro.">
+<meta name="theme-color" content="#0B1F3F">
+<link rel="icon" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --marine: #0B1F3F; --marine2: #14305C; --sky: #E9EFF8; --white: #fff; --line: #D3DCEB;
+    --ink: #0B1F3F; --mut: #51627E; --orange: #FF5B2E; --orange-text: #C93D14; --ok: #0B8F62;
+    --display: "Bricolage Grotesque", "Segoe UI Variable Display", system-ui, sans-serif;
+    --body: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font: 400 1.0625rem/1.55 var(--body); color: var(--ink); background: var(--sky); -webkit-text-size-adjust: 100%; }
+  img, svg { max-width: 100%; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+  .wrap { width: min(1120px, 100% - 40px); margin-inline: auto; }
+  h1, h2, h3 { font-family: var(--display); letter-spacing: -.025em; line-height: 1.05; margin: 0; }
+  h2 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); font-weight: 800; }
+  .eyebrow { font: 500 .8rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--orange-text); margin: 0 0 14px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: var(--orange); color: var(--marine); font: 700 1.05rem var(--body); padding: 16px 26px; border-radius: 14px; text-decoration: none; border: 0; cursor: pointer; transition: transform .15s, box-shadow .15s; box-shadow: 0 10px 24px -12px rgba(255, 91, 46, .8); }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ghost { background: transparent; color: inherit; border: 1.5px solid currentColor; box-shadow: none; opacity: .92; }
+
+  /* ---- hero ---- */
+  .hero { background: var(--marine); color: #EAF1FF; overflow: hidden; }
+  nav.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 800 1.25rem var(--display); text-decoration: none; letter-spacing: -.02em; }
+  .brand img { width: 34px; height: 34px; border-radius: 9px; }
+  nav.top .links { display: flex; gap: 26px; font-weight: 500; font-size: .98rem; }
+  nav.top .links a { text-decoration: none; opacity: .8; }
+  nav.top .links a:hover { opacity: 1; }
+  @media (max-width: 640px) { nav.top .links a:not(.keep) { display: none; } }
+  .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding: 34px 0 84px; }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; padding-bottom: 56px; } }
+  .hero h1 { font-size: clamp(2.5rem, 6.4vw, 4.6rem); font-weight: 800; }
+  .hero h1 em { font-style: normal; color: var(--orange); }
+  .hero p.lead { font-size: 1.2rem; color: #B7C6E2; max-width: 34em; margin: 22px 0 30px; }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero .btn.ghost { color: #EAF1FF; }
+  .micro { margin: 18px 0 0; font-size: .92rem; color: #8EA3C7; }
+
+  /* a assinatura: arquivos atravessando o portal */
+  .portal-stage { position: relative; aspect-ratio: 1; width: min(440px, 100%); margin-inline: auto; }
+  .portal-stage svg.ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .portal-stage .spin { transform-box: fill-box; transform-origin: center; animation: spin 26s linear infinite; }
+  .portal-stage .glow { position: absolute; inset: 18%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 91, 46, .28), transparent 65%); animation: breathe 3.6s ease-in-out infinite; }
+  .pc-dot { position: absolute; inset: 0; display: grid; place-items: center; }
+  .pc-dot i { width: 16%; aspect-ratio: 1; border-radius: 50%; background: #fff; box-shadow: 0 0 0 10px rgba(255, 255, 255, .08); }
+  .chip { position: absolute; top: 50%; left: 0; display: flex; align-items: center; gap: 8px; background: var(--white); color: var(--marine); font: 500 .8rem var(--mono); padding: 9px 12px; border-radius: 10px; white-space: nowrap; box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .6); opacity: 0; animation: fly 6.6s cubic-bezier(.5, .05, .6, 1) infinite; }
+  .chip svg { width: 16px; height: 16px; fill: none; stroke: var(--orange-text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .chip:nth-of-type(1) { margin-top: -88px; animation-delay: 0s; }
+  .chip:nth-of-type(2) { margin-top: 6px; animation-delay: 2.2s; }
+  .chip:nth-of-type(3) { margin-top: 84px; animation-delay: 4.4s; }
+  @keyframes fly {
+    0% { transform: translateX(-30%) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    62% { transform: translateX(150%) scale(1); opacity: 1; }
+    82% { transform: translateX(215%) scale(.2); opacity: 0; }
+    100% { transform: translateX(215%) scale(.2); opacity: 0; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes breathe { 50% { opacity: .55; transform: scale(.92); } }
+  @media (max-width: 860px) { .portal-stage { width: min(340px, 100%); } .chip { font-size: .7rem; padding: 7px 9px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .portal-stage .spin, .portal-stage .glow, .btn { animation: none; transition: none; }
+    .chip { animation: none; opacity: 1; transform: translateX(90%); }
+  }
+
+  /* ---- seções ---- */
+  section { padding: 84px 0; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 40px; counter-reset: s; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .step { background: var(--white); border: 1px solid var(--line); border-radius: 22px; padding: 26px; counter-increment: s; }
+  .step::before { content: counter(s); display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--marine); color: #fff; font: 800 1.05rem var(--display); margin-bottom: 16px; }
+  .step h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 8px; }
+  .step p { margin: 0; color: var(--mut); }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; margin-top: 40px; border-top: 1px solid var(--line); }
+  @media (max-width: 760px) { .facts { grid-template-columns: 1fr; } }
+  .fact { padding: 28px 28px 28px 0; border-bottom: 1px solid var(--line); }
+  .fact h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+  .fact p { margin: 0; color: var(--mut); max-width: 32em; }
+
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 40px; align-items: stretch; }
+  @media (max-width: 760px) { .plans { grid-template-columns: 1fr; } }
+  .plan { background: var(--white); border: 1px solid var(--line); border-radius: 24px; padding: 30px; display: flex; flex-direction: column; }
+  .plan.pro { background: var(--marine); color: #EAF1FF; border-color: var(--marine); box-shadow: 0 30px 50px -30px rgba(11, 31, 63, .6); }
+  .plan h3 { font-size: 1.5rem; font-weight: 800; }
+  .price { font: 800 3rem var(--display); letter-spacing: -.03em; margin: 12px 0 2px; }
+  .price small { font: 500 1rem var(--body); letter-spacing: 0; opacity: .7; }
+  .plan ul { list-style: none; padding: 0; margin: 20px 0 26px; display: grid; gap: 11px; flex: 1; }
+  .plan li { display: flex; gap: 10px; }
+  .plan li::before { content: "✓"; font-weight: 800; color: var(--ok); }
+  .plan.pro li::before { color: var(--orange); }
+  .plan .btn { width: 100%; }
+  .plan.pro .note { margin: 12px 0 0; font-size: .9rem; color: #8EA3C7; text-align: center; }
+  .plan .note { margin: 12px 0 0; font-size: .9rem; color: var(--mut); text-align: center; }
+
+  details { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px; }
+  details + details { margin-top: 10px; }
+  summary { cursor: pointer; font-weight: 700; font-size: 1.08rem; }
+  details p { margin: 12px 0 0; color: var(--mut); }
+  .faq { max-width: 760px; margin-top: 36px; }
+
+  .final { background: var(--marine); color: #EAF1FF; text-align: center; }
+  .final h2 { max-width: 14em; margin: 0 auto 14px; }
+  .final p { color: #B7C6E2; margin: 0 auto 28px; max-width: 32em; }
+  .final .cta-row { justify-content: center; }
+  footer { background: var(--marine); color: #8EA3C7; padding: 0 0 40px; font-size: .92rem; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--marine2); padding-top: 26px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <nav class="top">
+      <a class="brand" href="#"><img src="logo.svg" alt="">Teleporta</a>
+      <div class="links"><a href="#como">Como funciona</a><a href="#planos">Grátis e Pro</a><a class="keep" href="#baixar">Baixar</a></div>
+    </nav>
+    <div class="hero-grid">
+      <div>
+        <h1>Do celular pro PC. <em>Sem cabo, sem nuvem.</em></h1>
+        <p class="lead">Teleporta manda suas fotos, vídeos e arquivos pelo Wi-Fi direto para uma pasta do computador, na qualidade original. Escaneie um QR code e pronto.</p>
+        <div class="cta-row">
+          <a class="btn" href="https://github.com/Gabuim12/teleporta/releases/download/v0.1.0-beta/Teleporta-Windows.zip">Baixar para Windows</a>
+          <a class="btn ghost" href="https://github.com/Gabuim12/teleporta/releases/download/v0.1.0-beta/Teleporta-Mac.zip">Baixar para Mac</a>
+        </div>
+        <p class="micro">Grátis para começar. Sem cadastro. Nada sai da sua rede.</p>
+      </div>
+      <div class="portal-stage" aria-hidden="true">
+        <div class="glow"></div>
+        <svg class="ring" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="48.5" fill="none" stroke="rgba(255,255,255,.14)" stroke-width=".5"/>
+          <circle class="spin" cx="50" cy="50" r="48.5" fill="none" stroke="#FF5B2E" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="230 75"/>
+        </svg>
+        <div class="pc-dot"><i></i></div>
+        <div class="chip"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg>IMG_4821.heic</div>
+        <div class="chip"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>viagem.mp4</div>
+        <div class="chip"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>contrato.pdf</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="como">
+    <div class="wrap">
+      <p class="eyebrow">Como funciona</p>
+      <h2>Três passos. O celular não precisa instalar nada.</h2>
+      <div class="steps">
+        <div class="step"><h3>Abra o Teleporta no PC</h3><p>Um painel mostra um QR code e um PIN de 6 dígitos.</p></div>
+        <div class="step"><h3>Escaneie com o celular</h3><p>Aponte a câmera. Abre no navegador, no mesmo Wi-Fi do PC.</p></div>
+        <div class="step"><h3>Escolha e envie</h3><p>Fotos, vídeos, zips, PDFs. Os arquivos caem numa pasta do PC.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow">Por que Teleporta</p>
+      <h2>Simples de usar. Direto ao ponto.</h2>
+      <div class="facts">
+        <div class="fact"><h3>Qualidade original</h3><p>Nada é recomprimido. O arquivo chega do jeito que saiu do celular, com a data original da foto.</p></div>
+        <div class="fact"><h3>Nada vai pra nuvem</h3><p>Os arquivos trafegam só dentro da sua rede. Sem conta, sem upload para servidor de terceiros.</p></div>
+        <div class="fact"><h3>Nos dois sentidos</h3><p>Do celular pro PC e do PC pro celular. Arraste arquivos no painel e baixe no celular.</p></div>
+        <div class="fact"><h3>Texto e links também</h3><p>Copiou um link no PC? Mande para o celular em um toque. E o contrário.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="planos" style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow">Grátis e Pro</p>
+      <h2>Comece de graça. Pague uma vez se precisar de mais.</h2>
+      <div class="plans">
+        <div class="plan">
+          <h3>Grátis</h3>
+          <div class="price">R$ 0</div>
+          <ul>
+            <li>Até 30 arquivos por dia</li>
+            <li>Celular → PC e PC → celular</li>
+            <li>Textos e links</li>
+            <li>Qualidade original, sem recompressão</li>
+            <li>Português e inglês</li>
+          </ul>
+          <a class="btn ghost" href="#baixar" style="color:var(--ink)">Baixar grátis</a>
+        </div>
+        <div class="plan pro">
+          <h3>Pro</h3>
+          <div class="price">R$ 29 <small>pagamento único</small></div>
+          <ul>
+            <li>Sem limite de arquivos por dia</li>
+            <li>Organiza por data da foto ou por tipo</li>
+            <li>Pareamento fixo: escaneia uma vez só</li>
+            <li>Baixa vários arquivos de uma vez em ZIP</li>
+            <li>Histórico e estatísticas</li>
+          </ul>
+          <span class="btn" aria-disabled="true" style="opacity:.7;cursor:default">Pro em breve</span>
+          <p class="note">Baixe o grátis agora. Avisamos quando o Pro abrir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow">Perguntas</p>
+      <h2>O que as pessoas perguntam antes de baixar</h2>
+      <div class="faq">
+        <details><summary>Precisa de internet?</summary><p>Não. Basta o PC e o celular estarem no mesmo Wi-Fi (ou o celular no Wi-Fi do PC). Os arquivos não passam pela internet.</p></details>
+        <details><summary>Funciona em iPhone e Android?</summary><p>Sim. O celular só usa o navegador (Safari, Chrome, o que você tiver). No iPhone, o app mostra uma dica para enviar HEIC e vídeos em qualidade original.</p></details>
+        <details><summary>O Windows avisou “protegeu seu computador”. É normal?</summary><p>É, porque o programa ainda não tem assinatura digital paga. Clique em “Mais informações” e depois em “Executar assim mesmo”. O Teleporta só abre uma porta na sua rede local e você controla com o PIN.</p></details>
+        <details><summary>É seguro? Alguém na minha rede consegue pegar meus arquivos?</summary><p>Só quem tiver o PIN de 6 dígitos que aparece no seu PC. Depois de 5 tentativas erradas, o acesso trava por 1 minuto. Em redes públicas, prefira não usar.</p></details>
+        <details><summary>E no Mac?</summary><p>Funciona, mas por enquanto roda via script: o pacote inclui um passo a passo curto. Precisa do Python que vem com as Ferramentas de Linha de Comando da Apple.</p></details>
+        <details><summary>Quando o Pro abre? Como funciona a chave?</summary><p>Ainda não tem data. Quando abrir, você paga uma vez, recebe uma chave por e-mail e cola no painel, na aba Plano. Funciona offline.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final" id="baixar">
+    <div class="wrap">
+      <h2>Mande a primeira foto em um minuto</h2>
+      <p>Baixe, abra, escaneie. Se gostar e precisar de mais de 30 arquivos por dia, o Pro está a um clique.</p>
+      <div class="cta-row">
+        <a class="btn" href="https://github.com/Gabuim12/teleporta/releases/download/v0.1.0-beta/Teleporta-Windows.zip">Baixar para Windows</a>
+        <a class="btn ghost" href="https://github.com/Gabuim12/teleporta/releases/download/v0.1.0-beta/Teleporta-Mac.zip" style="color:#EAF1FF">Baixar para Mac</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Teleporta</span>
+    <span><a href="https://github.com/Gabuim12/teleporta">Código e documentação no GitHub</a></span>
+  </div>
+</footer>
+</body>
+</html>

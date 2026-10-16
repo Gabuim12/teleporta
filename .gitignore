@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+dist/
+build/
+*.spec
+.venv/
+# nunca versionar chaves nem vendas
+*.pem
+vendas.csv
+# ferramentas e notas só do vendedor (não vão para o repositório público)
+vendedor/
+COMO-VENDER.md

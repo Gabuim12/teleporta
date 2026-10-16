@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teleporta</title>
+<link rel="icon" href="/static/logo.svg">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js"></script>
+<style>
+  .pc { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .pc { grid-template-columns: 1fr; } }
+  .connect { display: grid; gap: 4px; }
+  .connect .portal { max-width: 280px; margin: 14px auto 6px; }
+  .qr { background: #fff; border-radius: 14px; padding: 7px; width: 100%; display: block; }
+  .addr { text-align: center; margin-top: 8px; }
+  .addr .url { font-size: .92rem; word-break: break-all; }
+  .pin { font: 800 2.1rem/1 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .22em; text-align: center; margin: 10px 0 0 .22em; }
+  .status { display: flex; align-items: center; gap: 8px; margin-top: 14px; justify-content: center; text-align: center; }
+  .work { display: grid; gap: 16px; min-width: 0; }
+  .block + .block, .feat + .block { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .head .acts { display: flex; gap: 8px; }
+  .drop { display: grid; justify-items: center; gap: 4px; border: 2px dashed var(--line); border-radius: 16px; padding: 22px; text-align: center; color: var(--mut); cursor: pointer; transition: border-color .15s, background .15s; }
+  .drop .i { width: 26px; height: 26px; color: var(--acc-text); }
+  .drop.over { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, transparent); color: var(--ink); }
+  input[type=file] { display: none; }
+  .banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--acc) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--acc) 45%, var(--line)); }
+  .note .txt { white-space: pre-wrap; word-break: break-word; }
+  .note .sub { margin-bottom: 2px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--surface2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .stat b { display: block; font-size: 1.4rem; letter-spacing: -.02em; }
+  .chart { display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; align-items: end; height: 96px; margin: 8px 0 18px; }
+  .chart i { display: block; background: var(--acc); border-radius: 5px 5px 2px 2px; min-height: 3px; opacity: .9; }
+  .chart i.z { background: var(--line); }
+  .locked { text-align: center; padding: 30px 12px; display: grid; justify-items: center; gap: 10px; }
+  .locked .i { width: 28px; height: 28px; color: var(--acc-text); }
+  .feat { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+  .feat li { display: flex; gap: 10px; align-items: flex-start; }
+  .feat .i { color: var(--ok); margin-top: 2px; }
+  .feat li.pro .i { color: var(--acc-text); }
+  .key-row { display: flex; gap: 8px; margin-top: 10px; }
+  .setting { display: grid; gap: 6px; padding: 12px 0; }
+  .setting + .setting { border-top: 1px solid var(--line); }
+  .setting label.t { font-weight: 650; display: flex; gap: 8px; align-items: center; }
+  .switch { display: flex; gap: 10px; align-items: center; }
+  .switch input { width: 20px; height: 20px; accent-color: var(--acc); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><img src="/static/logo.svg" alt="">Teleporta</div>
+  <div class="bar-r"><button class="chip" id="planchip" type="button"></button><button class="icon-btn" id="lang" type="button"></button></div>
+</header>
+
+<main class="pc">
+  <aside class="card connect">
+    <h1 data-i18n="connect.title"></h1>
+    <p class="mut" data-i18n="connect.help"></p>
+    <div class="portal" id="portal">
+      <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="48.5" fill="none" stroke="var(--line)" stroke-width=".6"/>
+        <circle class="spin" cx="50" cy="50" r="48.5" fill="none" stroke="var(--acc)" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="230 75"/>
+      </svg>
+      <div class="core"><img class="qr" id="qr" alt="" src="/qr.svg"></div>
+    </div>
+    <div class="addr">
+      <p class="mut" data-i18n="connect.or"></p>
+      <div class="url mono" id="url">…</div>
+      <div class="pin" id="pin">······</div>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span class="mut" id="status"></span></div>
+  </aside>
+
+  <section class="work">
+    <nav class="seg" role="tablist">
+      <button role="tab" data-tab="files" aria-selected="true" data-i18n="tab.files"></button>
+      <button role="tab" data-tab="text" aria-selected="false" data-i18n="tab.text"></button>
+      <button role="tab" data-tab="history" aria-selected="false" data-i18n="tab.history"></button>
+      <button role="tab" data-tab="plan" aria-selected="false" data-i18n="tab.plan"></button>
+    </nav>
+
+    <!-- Arquivos -->
+    <div class="card" id="tab-files">
+      <div class="banner" id="limit" hidden>
+        <span id="limit-txt"></span>
+        <button class="btn small" type="button" data-goto="plan" data-i18n="cta.pro"></button>
+      </div>
+      <div class="block">
+        <div class="head">
+          <h2 data-i18n="recv.title"></h2>
+          <div class="acts">
+            <button class="btn ghost small" id="zip-recv" type="button"></button>
+            <button class="btn ghost small" id="open-recv" type="button" data-i18n="open.folder"></button>
+          </div>
+        </div>
+        <ul class="list" id="recv"></ul>
+        <p class="mut" id="recv-dir" style="margin:12px 0 0"></p>
+      </div>
+      <div class="block">
+        <div class="head">
+          <h2 data-i18n="send.title"></h2>
+          <button class="btn ghost small" id="open-out" type="button" data-i18n="open.folder"></button>
+        </div>
+        <label class="drop" id="drop" for="pick">
+          <svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          <div id="drop-txt" data-i18n="send.drop"></div>
+          <div class="bar-p" id="drop-bar" style="width:100%;max-width:320px" hidden><i></i></div>
+        </label>
+        <input type="file" id="pick" multiple>
+        <ul class="list" id="out" style="margin-top:12px"></ul>
+      </div>
+    </div>
+
+    <!-- Texto e links -->
+    <div class="card" id="tab-text" hidden>
+      <div class="head"><h2 data-i18n="text.title"></h2></div>
+      <textarea id="note-in" data-i18n-ph="text.ph" rows="3"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin:10px 0 16px">
+        <button class="btn" id="note-send" type="button" data-i18n="text.send"></button>
+      </div>
+      <ul class="list" id="notes"></ul>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card" id="tab-history" hidden>
+      <div id="hist"></div>
+    </div>
+
+    <!-- Plano -->
+    <div class="card" id="tab-plan" hidden>
+      <div class="head"><h2 id="plan-title"></h2><span class="chip" id="plan-badge"></span></div>
+      <p class="mut" id="plan-desc"></p>
+      <ul class="feat">
+        <li><svg class="i" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span data-i18n="feat.free1"></span></li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span data-i18n="feat.free2"></span></li>
+        <li class="pro"><svg class="i" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="feat.pro1"></span></li>
+        <li class="pro"><svg class="i" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="feat.pro2"></span></li>
+        <li class="pro"><svg class="i" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="feat.pro3"></span></li>
+        <li class="pro"><svg class="i" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="feat.pro4"></span></li>
+        <li class="pro"><svg class="i" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="feat.pro5"></span></li>
+      </ul>
+
+      <div class="block" id="buy-box">
+        <h2 data-i18n="plan.have"></h2>
+        <div class="key-row">
+          <input type="text" id="key" data-i18n-ph="plan.key.ph" autocomplete="off" spellcheck="false">
+          <button class="btn" id="activate" type="button" data-i18n="plan.activate"></button>
+        </div>
+        <p class="err" id="key-msg" role="alert" style="margin:8px 0 0"></p>
+        <p style="margin:14px 0 0"><a class="btn ghost" id="buy" target="_blank" rel="noopener" href="#"><span data-i18n="plan.buy"></span> <svg class="i" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a></p>
+      </div>
+
+      <div class="block">
+        <h2 data-i18n="settings.title"></h2>
+        <div class="setting">
+          <label class="t" for="organize"><span data-i18n="organize.title"></span> <span class="chip pro" data-i18n="badge.pro"></span></label>
+          <select id="organize">
+            <option value="off" data-i18n="organize.off"></option>
+            <option value="date" data-i18n="organize.date"></option>
+            <option value="type" data-i18n="organize.type"></option>
+          </select>
+        </div>
+        <div class="setting">
+          <label class="switch t" for="fixed"><input type="checkbox" id="fixed"> <span><span data-i18n="fixed.title"></span> <span class="chip pro" data-i18n="badge.pro"></span></span></label>
+          <p class="mut" style="margin:0" data-i18n="fixed.desc"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const { t, $, $$, esc, fmt, ago, ico, kindIcon, toast, linkify, copyText, applyI18n, langButton } = TP;
+const IMG = /\.(jpe?g|png|gif|webp|bmp)$/i, VID = /\.(mp4|mov|m4v|avi|mkv|webm)$/i;
+let INFO = null, NOTES = {};
+const last = {};
+const paint = (el, key, html) => { if (last[key] !== html) { last[key] = html; el.innerHTML = html; } };
+const j = r => r.json();
+
+applyI18n(); langButton($('#lang'));
+
+// ---------- abas ----------
+function goto(name) {
+  $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
+  ['files', 'text', 'history', 'plan'].forEach(n => $('#tab-' + n).hidden = n !== name);
+  if (name === 'history') history();
+  if (name === 'text') notes();
+}
+document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-tab]'); if (tab) return goto(tab.dataset.tab);
+  const go = e.target.closest('[data-goto]'); if (go) return goto(go.dataset.goto);
+});
+$('#planchip').onclick = () => goto('plan');
+
+// ---------- conexão e plano ----------
+async function info() {
+  try {
+    INFO = await fetch('/api/info').then(j);
+    const d = INFO.devices, p = INFO.plan;
+    $('#url').textContent = INFO.url.replace('http://', '');
+    $('#pin').textContent = INFO.pin;
+    $('#recv-dir').textContent = t('recv.saving') + ': ' + INFO.received_dir;
+    $('#dot').className = 'dot' + (d.length ? ' on' : '');
+    $('#portal').classList.toggle('on', d.length > 0);
+    $('#status').textContent = d.length ? t('status.on', { names: d.join(', ') }) : t('status.wait');
+    // chip de plano
+    const chip = $('#planchip');
+    chip.className = 'chip' + (p.pro ? ' pro' : '');
+    chip.innerHTML = p.pro ? ico('bolt') + ' Pro' : esc(t('chip.free', { used: p.used, limit: p.limit }));
+    // faixa de limite
+    $('#limit').hidden = p.pro || p.remaining > 0;
+    $('#limit-txt').textContent = t('limit.hit', { limit: p.limit });
+    $('#zip-recv').innerHTML = (p.pro ? '' : ico('lock') + ' ') + esc(t('zip.all'));
+    // aba Plano
+    $('#plan-title').textContent = p.pro ? t('plan.pro.title') : t('plan.free.title');
+    $('#plan-badge').className = 'chip' + (p.pro ? ' pro' : '');
+    $('#plan-badge').textContent = p.pro ? 'Pro' : t('plan.free.badge');
+    $('#plan-desc').textContent = p.pro ? t('plan.pro.desc', { email: p.email }) : t('plan.free.desc', { used: p.used, limit: p.limit });
+    $('#buy-box').hidden = p.pro;
+    $('#buy').href = p.buy_url;
+    for (const el of [$('#organize'), $('#fixed')]) el.disabled = !p.pro;
+    if (document.activeElement !== $('#organize')) $('#organize').value = INFO.organize;
+    $('#fixed').checked = INFO.fixed;
+  } catch {}
+}
+
+$('#activate').onclick = async () => {
+  const key = $('#key').value;
+  if (!key.trim()) return;
+  const r = await fetch('/api/license', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
+  if (r.ok) { $('#key').value = ''; $('#key-msg').textContent = ''; toast(t('plan.ok')); } else $('#key-msg').textContent = t('plan.bad');
+  info();
+};
+async function saveSetting(body) {
+  await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  toast(t('settings.saved')); info();
+}
+$('#organize').onchange = e => saveSetting({ organize: e.target.value });
+$('#fixed').onchange = e => saveSetting({ fixed: e.target.checked });
+
+// ---------- recebidos ----------
+let seen = null;
+async function received() {
+  try {
+    const files = await fetch('/api/received').then(j);
+    const done = files.filter(f => !f.partial).map(f => f.name);
+    if (seen) done.filter(n => !seen.has(n)).slice(0, 3).forEach(n => toast(t('toast.received', { name: n.split('/').pop() })));
+    seen = new Set(done);
+    $('#portal').classList.toggle('busy', files.some(f => f.partial));
+    paint($('#recv'), 'recv', files.length ? files.map(f => {
+      const thumb = IMG.test(f.title) && !f.partial
+        ? `<img loading="lazy" src="/files/received/${encodeURIComponent(f.name)}" alt="">`
+        : ico(VID.test(f.title) ? 'video' : kindIcon(f.title));
+      const meta = f.partial ? `<span class="pulse">${esc(t('recv.receiving'))} ${fmt(f.size)}</span>`
+        : esc((f.folder ? f.folder + ' · ' : '') + fmt(f.size) + ' · ' + ago(f.mtime));
+      return `<li class="row ${f.partial ? '' : 'click'}" data-open="${f.partial ? '' : esc(f.name)}">
+        <div class="thumb">${thumb}</div>
+        <div class="grow"><div class="nm">${esc(f.title)}</div><div class="sub">${meta}</div></div>
+        ${f.partial ? '' : `<button class="x" title="${esc(t('delete'))}" data-delrecv="${esc(f.name)}">${ico('trash')}</button>`}</li>`;
+    }).join('') : `<li class="empty">${esc(t('recv.empty'))}</li>`);
+  } catch {}
+}
+
+async function outbox() {
+  try {
+    const { files } = await fetch('/api/outbox').then(j);
+    paint($('#out'), 'out', files.filter(f => !f.partial).map(f =>
+      `<li class="row"><div class="thumb">${ico(kindIcon(f.title))}</div>
+       <div class="grow"><div class="nm">${esc(f.title)}</div><div class="sub">${fmt(f.size)}</div></div>
+       <button class="x" title="${esc(t('remove'))}" data-del="${esc(f.name)}">${ico('x')}</button></li>`).join('') ||
+      `<li class="empty">${esc(t('send.empty'))}</li>`);
+  } catch {}
+}
+
+document.addEventListener('click', async e => {
+  const delr = e.target.closest('[data-delrecv]');
+  if (delr) {
+    if (delr.dataset.armed) { await fetch('/api/received/' + encodeURIComponent(delr.dataset.delrecv), { method: 'DELETE' }); return received(); }
+    delr.dataset.armed = '1'; delr.classList.add('arm'); delr.textContent = t('delete.confirm');
+    setTimeout(() => { delr.dataset.armed = ''; delr.classList.remove('arm'); delr.innerHTML = ico('trash'); }, 3000);
+    return;
+  }
+  const open = e.target.closest('[data-open]');
+  if (open && open.dataset.open) fetch('/api/open?which=received&name=' + encodeURIComponent(open.dataset.open), { method: 'POST' });
+  const del = e.target.closest('[data-del]');
+  if (del) { await fetch('/api/outbox/' + encodeURIComponent(del.dataset.del), { method: 'DELETE' }); outbox(); }
+});
+$('#open-recv').onclick = () => fetch('/api/open?which=received', { method: 'POST' });
+$('#open-out').onclick = () => fetch('/api/open?which=outbox', { method: 'POST' });
+$('#zip-recv').onclick = () => {
+  if (INFO && INFO.plan.pro) location.href = '/api/zip?which=received';
+  else { toast(t('pro.only')); goto('plan'); }
+};
+
+// ---------- PC -> celular ----------
+async function sendToPhone(files) {
+  files = [...files];
+  const bar = $('#drop-bar'), fill = bar.firstElementChild;
+  bar.hidden = false; fill.style.width = '0';
+  for (let n = 0; n < files.length; n++) {
+    const f = files[n];
+    $('#drop-txt').textContent = t('send.copying', { n: n + 1, total: files.length, name: f.name });
+    await fetch('/api/outbox-upload?name=' + encodeURIComponent(f.name), { method: 'PUT', body: f, headers: { 'X-Last-Modified': f.lastModified } });
+    fill.style.width = ((n + 1) / files.length * 100) + '%';
+    outbox();
+  }
+  bar.hidden = true;
+  $('#drop-txt').textContent = t('send.drop');
+  toast(t('send.done', { n: files.length }));
+}
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => sendToPhone(e.dataTransfer.files));
+$('#pick').addEventListener('change', e => { sendToPhone(e.target.files); e.target.value = ''; });
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+document.addEventListener('paste', e => { const fs = e.clipboardData && e.clipboardData.files; if (fs && fs.length) sendToPhone(fs); });
+
+// ---------- texto e links ----------
+async function notes() {
+  try {
+    const list = await fetch('/api/notes').then(j);
+    NOTES = Object.fromEntries(list.map(n => [n.id, n.text]));
+    paint($('#notes'), 'notes', list.length ? list.map(n => `<li class="row note">
+      <div class="grow"><div class="sub">${esc(n.from)} · ${ago(n.t)}</div><div class="txt">${linkify(n.text)}</div></div>
+      <button class="x" title="${esc(t('text.copy'))}" data-copy="${n.id}">${ico('copy')}</button>
+      <button class="x" title="${esc(t('delete'))}" data-delnote="${n.id}">${ico('x')}</button></li>`).join('')
+      : `<li class="empty">${esc(t('text.empty'))}</li>`);
+  } catch {}
+}
+$('#note-send').onclick = async () => {
+  const text = $('#note-in').value.trim();
+  if (!text) return;
+  await fetch('/api/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+  $('#note-in').value = ''; notes();
+};
+$('#note-in').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $('#note-send').click(); });
+document.addEventListener('click', async e => {
+  const c = e.target.closest('[data-copy]');
+  if (c) { await copyText(NOTES[c.dataset.copy] || ''); toast(t('text.copied')); }
+  const d = e.target.closest('[data-delnote]');
+  if (d) { await fetch('/api/notes/' + d.dataset.delnote, { method: 'DELETE' }); notes(); }
+});
+
+// ---------- histórico (Pro) ----------
+async function history() {
+  const box = $('#hist');
+  try {
+    const r = await fetch('/api/history');
+    if (r.status === 402) {
+      box.innerHTML = `<div class="locked">${ico('lock')}<h2>${esc(t('hist.locked.title'))}</h2><p class="mut">${esc(t('hist.locked.desc'))}</p>
+        <button class="btn" type="button" data-goto="plan">${esc(t('cta.pro'))}</button></div>`;
+      return;
+    }
+    const h = await r.json();
+    const max = Math.max(1, ...h.days.map(d => d.files));
+    box.innerHTML = `<div class="head"><h2>${esc(t('hist.title'))}</h2></div>
+      <div class="stats">
+        <div class="stat"><b>${h.total.files}</b><span class="mut">${esc(t('hist.files'))}</span></div>
+        <div class="stat"><b>${fmt(h.total.in)}</b><span class="mut">${esc(t('hist.in'))}</span></div>
+        <div class="stat"><b>${fmt(h.total.out)}</b><span class="mut">${esc(t('hist.out'))}</span></div>
+      </div>
+      <div class="mut">${esc(t('hist.days'))}</div>
+      <div class="chart">${h.days.map(d => `<i class="${d.files ? '' : 'z'}" style="height:${d.files ? Math.max(6, d.files / max * 100) : 4}%" title="${esc(d.day)}: ${d.files}"></i>`).join('')}</div>
+      <ul class="list">${h.items.length ? h.items.map(i => `<li class="row"><div class="thumb">${ico(i.d === 'in' ? 'down' : 'up')}</div>
+        <div class="grow"><div class="nm">${esc(i.n)}</div><div class="sub">${esc(i.d === 'in' ? t('hist.from', { dev: i.dev }) : t('hist.to'))} · ${fmt(i.s)} · ${ago(i.t)}</div></div></li>`).join('')
+        : `<li class="empty">${esc(t('hist.empty'))}</li>`}</ul>`;
+  } catch {}
+}
+
+info(); received(); outbox(); notes();
+setInterval(info, 3000); setInterval(received, 2000); setInterval(outbox, 5000); setInterval(notes, 3000);
+</script>
+</body>
+</html>

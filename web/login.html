@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B1F3F">
+<title>Teleporta</title>
+<link rel="icon" href="/static/logo.svg">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js"></script>
+<style>
+  main { max-width: 360px; margin: 9vh auto 0; text-align: center; display: grid; gap: 6px; justify-items: center; }
+  .portal { width: 120px; margin-bottom: 10px; }
+  .portal .core { color: var(--acc-text); }
+  .portal .core .i { width: 34px; height: 34px; }
+  form { width: 100%; }
+  input { font: 800 2rem/1 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .3em; text-align: center; padding: 16px 8px 16px 20px; margin: 16px 0 12px; }
+  .btn { width: 100%; padding: 16px; font-size: 1.05rem; }
+</style>
+</head>
+<body>
+<div style="position:absolute;top:16px;right:16px"><button class="icon-btn" id="lang" type="button"></button></div>
+<main>
+  <div class="portal" aria-hidden="true">
+    <svg class="ring" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48.5" fill="none" stroke="var(--line)" stroke-width=".8"/>
+      <circle class="spin" cx="50" cy="50" r="48.5" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-dasharray="230 75"/>
+    </svg>
+    <div class="core"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+  </div>
+  <h1 data-i18n="login.title"></h1>
+  <p class="mut" data-i18n="login.help"></p>
+  <form id="f">
+    <input id="pin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" autofocus placeholder="······">
+    <button class="btn" type="submit" data-i18n="login.btn"></button>
+    <p id="msg" class="err" role="alert" style="margin-top:12px"></p>
+  </form>
+</main>
+<script>
+const { t, $, applyI18n, langButton } = TP;
+applyI18n(); langButton($('#lang'));
+$('#f').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('#msg').textContent = '';
+  try {
+    const r = await fetch('/login', { method: 'POST', body: JSON.stringify({ pin: $('#pin').value }) });
+    const j = await r.json();
+    if (j.ok) return location.reload();
+    $('#msg').textContent = j.error === 'locked' ? t('login.locked', { s: j.wait }) : t('login.bad');
+    $('#pin').select();
+  } catch { $('#msg').textContent = t('login.offline'); }
+});
+</script>
+</body>
+</html>
