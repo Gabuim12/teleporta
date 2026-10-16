@@ -10,9 +10,9 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 PUBLIC_KEY = "WmQa7K/1I3RkEvXhQUJ7PzPQT8hvRM4XoJB+tnHGVkM="
 
-# Troque pelo link da sua página de pagamento (Kiwify, Hotmart, Mercado Pago, Stripe, Gumroad…).
-# O empacotar.ps1 se recusa a gerar o pacote enquanto isto ainda for o texto de exemplo.
-BUY_URL = "https://SEU-LINK-DE-PAGAMENTO"
+# Enquanto o Pro não está à venda, o botão leva à seção de planos do site.
+# Quando tiver o link de pagamento (Kiwify, Hotmart, Mercado Pago, Stripe, Gumroad…), troque aqui.
+BUY_URL = "https://teleporta.vercel.app/#planos"
 
 
 def _b64d(s):
