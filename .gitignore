@@ -13,3 +13,6 @@ COMO-VENDER.md
 
 .vercel/
 .env*
+
+# fontes de trabalho do gerador de ativos (só para a imagem de compartilhamento)
+brand/_*.ttf

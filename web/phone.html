@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0B1F3F">
+<meta name="theme-color" content="#061125">
 <title>Teleporta</title>
-<link rel="icon" href="/static/logo.svg">
-<link rel="apple-touch-icon" href="/static/logo.svg">
+<link rel="icon" type="image/png" href="/static/icon.png">
+<link rel="apple-touch-icon" href="/static/icon.png">
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/app.js"></script>
 <style>
@@ -36,7 +36,7 @@
 <main>
   <header class="bar">
     <div>
-      <div class="brand"><img src="/static/logo.svg" alt="">Teleporta</div>
+      <a class="brand" href="/" aria-label="Teleporta"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/logo-branca.png"><img src="/static/logo.png" alt="Teleporta"></picture></a>
       <div class="hostline mut" style="margin-top:6px"><span id="dot" class="dot on"></span><span id="host"></span></div>
     </div>
     <div class="bar-r"><span class="chip" id="planchip"></span><button class="icon-btn" id="lang" type="button"></button></div>
@@ -54,8 +54,9 @@
     <label class="card pick" for="file">
       <div class="portal" aria-hidden="true">
         <svg class="ring" viewBox="0 0 100 100">
+        <defs><linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9A00"/><stop offset=".55" stop-color="#FF5A1F"/><stop offset="1" stop-color="#B42AEF"/></linearGradient></defs>
           <circle cx="50" cy="50" r="48.5" fill="none" stroke="var(--line)" stroke-width=".8"/>
-          <circle class="spin" cx="50" cy="50" r="48.5" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-dasharray="230 75"/>
+          <circle class="spin" cx="50" cy="50" r="48.5" fill="none" stroke="url(#ringg)" stroke-width="3" stroke-linecap="round" stroke-dasharray="230 75"/>
         </svg>
         <div class="core"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
       </div>

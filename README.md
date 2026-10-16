@@ -1,8 +1,13 @@
-<p align="center"><img src="web/logo.svg" width="72" alt="Teleporta"></p>
-
-<h1 align="center">Teleporta</h1>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/logo-tagline-branca.png">
+    <img src="brand/logo-tagline.png" width="520" alt="Teleporta — dados em movimento, resultados mais rápidos">
+  </picture>
+</p>
 
 <p align="center">Passe fotos, vídeos e arquivos entre o celular e o PC pelo Wi-Fi.<br>Sem cabo, sem nuvem, sem recompressão.</p>
+
+<p align="center"><a href="https://teleporta.vercel.app">Site</a> · <a href="https://github.com/Gabuim12/teleporta/releases">Baixar</a></p>
 
 ---
 
@@ -84,12 +89,21 @@ Gera `dist\release\Teleporta-Windows.zip` e `Teleporta-Mac.zip` com o PyInstalle
 teleporta.py   servidor HTTP, rotas e regras do plano
 licenca.py     verificação offline da chave de licença (Ed25519)
 dados.py       configuração, histórico e contagem diária
-web/           painel do PC, tela do celular, login (HTML, CSS e JS puros)
+web/           painel do PC, tela do celular, login (HTML, CSS e JS puros, fontes embutidas)
 site/          página de apresentação (publicada na Vercel)
+brand/         identidade visual: logos, ícones e o script que gera tudo
 empacotar.ps1  gera os pacotes de Windows e Mac
 ```
 
 Dependências: `qrcode` e `cryptography`. Todo o resto é biblioteca padrão do Python.
+
+## Identidade visual
+
+<p align="center"><img src="brand/identidade.png" width="760" alt="Identidade visual do Teleporta"></p>
+
+- **Cores:** navy `#061125`, laranja `#FF7A0A` (do gradiente laranja → violeta `#B42AEF` da porta e da nuvem) e azul `#0063FD` (os dados).
+- **Tipografia:** [Outfit](https://fonts.google.com/specimen/Outfit) nos títulos e [Inter](https://fonts.google.com/specimen/Inter) no texto, ambas sob a licença SIL OFL 1.1 e embutidas no app e no site. O nome na logo é lettering próprio; a Outfit ExtraBold é a fonte mais próxima dele.
+- **Arquivos:** `brand/logo*.png` (transparentes, versões para fundo claro e escuro), `simbolo.png`, `icone-*.png`, `teleporta.ico` e `og.png`. Para regenerar tudo a partir de `brand/identidade.png`, rode `python brand/gerar_ativos.py` (precisa de Pillow e numpy).
 
 ---
 

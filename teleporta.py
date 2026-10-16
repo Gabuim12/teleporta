@@ -34,7 +34,11 @@ WEB_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "web"  # _MEIP
 STATIC_FILES = {
     "style.css": "text/css; charset=utf-8",
     "app.js": "text/javascript; charset=utf-8",
-    "logo.svg": "image/svg+xml",
+    "logo.png": "image/png",
+    "logo-branca.png": "image/png",
+    "icon.png": "image/png",
+    "outfit.woff2": "font/woff2",
+    "inter.woff2": "font/woff2",
 }
 CHUNK = 1024 * 1024
 ONLINE_WINDOW = 15
@@ -267,8 +271,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        for k, v in (headers or {}).items():
+        for k, v in {"Cache-Control": "no-store", **(headers or {})}.items():
             self.send_header(k, v)
         self.end_headers()
         if body and self.command != "HEAD":
@@ -401,7 +404,9 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/static/"):
             name = path[len("/static/"):]
             if name in STATIC_FILES:
-                return self._send(200, (WEB_DIR / name).read_bytes(), STATIC_FILES[name], {"Cache-Control": "no-cache"})
+                # CSS e JS mudam com o app (revalidar); fontes e imagens quase nunca (cache de 1 dia)
+                cache = "no-cache" if name.endswith((".css", ".js")) else "public, max-age=86400"
+                return self._send(200, (WEB_DIR / name).read_bytes(), STATIC_FILES[name], {"Cache-Control": cache})
             return self._send(404, b"nao encontrado")
 
         if path == "/qr.svg":

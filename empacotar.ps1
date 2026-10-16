@@ -15,7 +15,7 @@ python -m pip install -q --disable-pip-version-check -r requirements.txt pyinsta
 Check "instalar dependências"
 
 $build = Join-Path $env:TEMP "pyi-build"
-python -m PyInstaller --onefile --name Teleporta --add-data "$((Resolve-Path web).Path);web" `
+python -m PyInstaller --onefile --name Teleporta --icon "$((Resolve-Path brand\teleporta.ico).Path)" --add-data "$((Resolve-Path web).Path);web" `
     --distpath dist --workpath $build --specpath $build teleporta.py | Out-Null
 Check "PyInstaller"
 Remove-Item -Recurse -Force $build
